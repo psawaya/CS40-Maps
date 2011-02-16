@@ -34,6 +34,64 @@ class VertexComparator implements Comparator<Vertex> {
     }
 }
 
+class MedianSplitter {
+    static VertexComparator comparator;
+    static int targetpos;
+    public static void split(Vertex[] arr, boolean splitOnX) {
+        split(arr, 0, arr.length, splitOnX);
+    }
+    public static void split(Vertex[] arr, int leftpos, int rightpos, boolean splitOnX) {
+        comparator = new VertexComparator(splitOnX);
+        targetpos = (leftpos+rightpos)/2;
+        split(arr, leftpos, rightpos);
+    }
+    static void split(Vertex[] arr, int leftpos, int rightpos) {
+        int midpt = (leftpos+rightpos)/2;
+        Vertex pivot = arr[midpt];
+        arr[midpt] = arr[rightpos-1];
+        int i = leftpos;
+        int j = rightpos - 1;
+        // ensure all values in the array are placed in position < i are <= pivot,
+        // and those that are placed in position > j are > pivot.
+        for (; i < j; i++) {
+            if (comparator.compare(arr[i], pivot) > 0) {
+                boolean terminate = false;
+                while (comparator.compare(arr[j-1], pivot) > 0) {
+                    j--;
+                    if (i == j) {
+                        terminate = true;
+                        break;
+                    }
+                }
+                if (terminate)
+                    break;
+
+                Vertex tmp = arr[j-1];
+                arr[j-1] = arr[i];
+                arr[i] = tmp;
+            }
+        }
+
+        arr[rightpos-1] = arr[i];
+        arr[i] = pivot;
+
+        if (i != targetpos) { // have we found the median?
+            if (i > targetpos) { // if not, exclude it and recursively search the rest
+                split(arr, leftpos, i);
+            } else {
+                split(arr, i+1, rightpos);
+            }
+        }
+    }
+    public static void naiveSplit(Vertex[] vertices, boolean splitOnX) {
+        naiveSplit(vertices, 0, vertices.length, splitOnX);
+    }
+    public static void naiveSplit(Vertex[] vertices, int left, int right, boolean splitOnX) {
+        Comparator<Vertex> vertexComparator = new VertexComparator(splitOnX);
+        Arrays.sort(vertices, left, right, vertexComparator);
+    }
+}
+
 public class MakeTree {
     public static int getVertexCount(Scanner s) {
         int size = -1;
@@ -66,68 +124,14 @@ public class MakeTree {
         return vertices;
     }
 
-    static VertexComparator comparator;
-    static int targetpos;
-    public static void splitOnMedian(Vertex[] arr, boolean splitOnX) {
-        splitOnMedian(arr, 0, arr.length, splitOnX);
-    }
-    public static void splitOnMedian(Vertex[] arr, int leftpos, int rightpos, boolean splitOnX) {
-        comparator = new VertexComparator(splitOnX);
-        targetpos = (leftpos+rightpos)/2;
-        splitOnMedian(arr, leftpos, rightpos);
-    }
-    public static void splitOnMedian(Vertex[] arr, int leftpos, int rightpos) {
-        int midpt = (leftpos+rightpos)/2;
-        Vertex pivot = arr[midpt];
-        arr[midpt] = arr[rightpos-1];
-        int i = leftpos;
-        int j = rightpos - 1;
-        // ensure all values in the array are placed in position < i are <= pivot,
-        // and those that are placed in position > j are > pivot.
-        for (; i < j; i++) {
-            if (comparator.compare(arr[i], pivot) > 0) {
-                boolean terminate = false;
-                while (comparator.compare(arr[j-1], pivot) > 0) {
-                    j--;
-                    if (i == j) {
-                        terminate = true;
-                        break;
-                    }
-                }
-                if (terminate)
-                    break;
-
-                Vertex tmp = arr[j-1];
-                arr[j-1] = arr[i];
-                arr[i] = tmp;
-            }
-        }
-
-        arr[rightpos-1] = arr[i];
-        arr[i] = pivot;
-
-        if (i != targetpos) { // have we found the median?
-            if (i > targetpos) { // if not, exclude it and recursively search the rest
-                splitOnMedian(arr, leftpos, i);
-            } else {
-                splitOnMedian(arr, i+1, rightpos);
-            }
-        }
-    }
-    public static void naiveSplitOnMedian(Vertex[] vertices, boolean splitOnX) {
-        naiveSplitOnMedian(vertices, 0, vertices.length, splitOnX);
-    }
-    public static void naiveSplitOnMedian(Vertex[] vertices, int left, int right, boolean splitOnX) {
-        Comparator<Vertex> vertexComparator = new VertexComparator(splitOnX);
-        Arrays.sort(vertices, left, right, vertexComparator);
-    }
     public static void treeify(Vertex[] vertices) {
         treeify(vertices, true, 0, vertices.length);
     }
     public static void treeify(Vertex[] vertices, boolean useXaxis, int left, int right) {
         int minSize = 1;
+        MedianSplitter splitter = new MedianSplitter();
         if (right - left > minSize) {
-            splitOnMedian(vertices, left, right, useXaxis);
+            splitter.split(vertices, left, right, useXaxis);
             int midpt = (right+left)/2;
             treeify(vertices, !useXaxis, left, midpt);
             treeify(vertices, !useXaxis, midpt, right);
