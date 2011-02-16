@@ -93,41 +93,24 @@ class MedianSplitter {
 }
 
 public class MakeTree {
-    public static int getVertexCount(Scanner s) {
-        int size = -1;
-        while (s.hasNext()) {
-            if (s.next().equals("p") ) {
-                s.next();
-                s.next();
-                s.next();
-                size = s.nextInt();
-                break;
-            }
-            s.nextLine();
-        }
-        return size;
+    Vertex[] vertices;
+    
+    public void createVertexArray(int size){
+        vertices = new Vertex[size];
     }
-    public static Vertex[] loadVertices(String fname) throws IOException {
-        Scanner s = new Scanner(new BufferedInputStream(new FileInputStream(fname + ".co"), 1<<24));
-        Vertex[] vertices = new Vertex[getVertexCount(s)];
-        while (s.hasNext()) {
-            String t = s.next();
-            if (!t.equals("v")) {
-                s.nextLine();
-                continue;
-            }
-            int id = s.nextInt() - 1;
-            int x = s.nextInt();
-            int y = s.nextInt();
-            vertices[id] = new Vertex(id, x, y);
-        }
+    
+    public Vertex[] getVertexArray() {
         return vertices;
     }
+    
+    public void buildTree() {
+        treeify(vertices);
+    }
 
-    public static void treeify(Vertex[] vertices) {
+    static void treeify(Vertex[] vertices) {
         treeify(vertices, true, 0, vertices.length);
     }
-    public static void treeify(Vertex[] vertices, boolean useXaxis, int left, int right) {
+    static void treeify(Vertex[] vertices, boolean useXaxis, int left, int right) {
         int minSize = 1;
         MedianSplitter splitter = new MedianSplitter();
         if (right - left > minSize) {
@@ -137,16 +120,11 @@ public class MakeTree {
             treeify(vertices, !useXaxis, midpt, right);
         }
     }
-    public static int[] generateVertexMap(Vertex[] vertices) {
+    static int[] generateVertexMap(Vertex[] vertices) {
         int[] map = new int[vertices.length];
         for (int i=0; i < vertices.length; i++)  {
             map[vertices[i].id] = i;
         }
         return map;
-    }
-    public static void main (String[] args) throws IOException {
-        Vertex[] vertices = loadVertices(args[0]);
-        treeify(vertices);
-        //for (Vertex v : vertices) System.out.println(v.id + " " + v.x + " " + v.y);
     }
 }
