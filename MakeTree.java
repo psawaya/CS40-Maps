@@ -8,6 +8,9 @@ class Vertex {
     public int x;
     public int y;
     public Edge[] edges;
+    public String toString() {
+        return x + ", "+ y;
+    }
     public Vertex(int id_, int x_, int y_) {
         id = id_;
         x = x_;
@@ -19,19 +22,6 @@ class Vertex {
 class Edge {
     int distance;
     int vertexIdx;
-}
-
-class VertexComparator implements Comparator<Vertex> {
-    boolean sortOnX;
-    public VertexComparator(boolean sortOnX_) {
-        sortOnX = sortOnX_;
-    }
-    public int compare(Vertex a, Vertex b) {
-        if (sortOnX)
-            return a.x - b.x;
-        else
-            return a.y - b.y;
-    }
 }
 
 class MedianSplitter {
@@ -93,6 +83,7 @@ class MedianSplitter {
 }
 
 public class MakeTree {
+    public final static int minSize = 1;
     Vertex[] vertices;
     
     public void createVertexArray(int size){
@@ -111,7 +102,6 @@ public class MakeTree {
         treeify(vertices, true, 0, vertices.length);
     }
     static void treeify(Vertex[] vertices, boolean useXaxis, int left, int right) {
-        int minSize = 1;
         MedianSplitter splitter = new MedianSplitter();
         if (right - left > minSize) {
             splitter.split(vertices, left, right, useXaxis);

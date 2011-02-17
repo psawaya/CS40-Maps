@@ -13,6 +13,13 @@ public class MapReader {
         
         MapReader mapReader = new MapReader();
         mapReader.readMap(args[0]);
+        
+        MapSearcher mapSearcher = new MapSearcher(mapReader.getTree());
+        System.out.println ("Found " + mapSearcher.findInMap(-73576169,41079696,200000,200000).size() + " vertices.");
+    }
+    
+    MakeTree getTree() {
+        return tree;
     }
     
     void readMap(String filename) {
@@ -22,7 +29,6 @@ public class MapReader {
             parseFile(filename + ".co");    
         }
         catch (IOException e) {
-            
         }
         
         tree.buildTree();
