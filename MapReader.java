@@ -3,9 +3,9 @@ import java.util.Scanner;
 
 public class MapReader {
     
-    MakeTree tree;
+    static MakeTree tree;
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, FileNotFoundException {
         if (args.length == 0) {
             System.out.println("USAGE: java MapReader <file>.co");
             return;
@@ -13,13 +13,19 @@ public class MapReader {
         
         MapReader mapReader = new MapReader();
         mapReader.readMap(args[0]);
+
+        DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("tmp")));
+        for (int i=0; i < tree.vertices.length; i++) {
+            tree.vertices[i].write(out);
+        }
     }
     
     void readMap(String filename) {
         tree = new MakeTree();
         
         try {
-            parseFile(filename + ".co");    
+            parseVertexFile(filename + ".co");    
+            parseArcFile(filename + ".gr");    
         }
         catch (IOException e) {
             
@@ -28,7 +34,7 @@ public class MapReader {
         tree.buildTree();
     }
     
-    void parseFile(String filename) throws IOException {
+    void parseVertexFile(String filename) throws IOException {
         Scanner s = new Scanner(new BufferedInputStream(new FileInputStream(filename), 1<<24));
         
         //Get vertex count
@@ -60,6 +66,22 @@ public class MapReader {
             int y = s.nextInt();
             vertices[id] = new Vertex(id, x, y);
         }    
+    }
+
+    void parseArcFile(String filename) throws IOException {
+        Scanner s = new Scanner(new BufferedInputStream(new FileInputStream(filename), 1<<24));
+        Vertex[] vertices = tree.getVertexArray();
+        while (s.hasNext()) {
+            String t = s.next();
+            if (!t.equals("a")) {
+                s.nextLine();
+                continue;
+            }
+            int v1 = s.nextInt() - 1;
+            int v2 = s.nextInt() - 1;
+            int weight = s.nextInt();
+            vertices[v1].addEdge(v2, weight);
+        }
     }
     
 }
