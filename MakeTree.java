@@ -11,17 +11,47 @@ class Vertex {
     public String toString() {
         return x + ", "+ y;
     }
+    public int edgeCount;
+    static int maxEdges = 10;
     public Vertex(int id_, int x_, int y_) {
         id = id_;
         x = x_;
         y = y_;
-        edges = new Edge[10]; //No vertex should have over 10 edges.
+        edgeCount = 0;
+        edges = new Edge[maxEdges]; //No vertex should have over 10 edges.
+    }
+    public void write(DataOutputStream out) throws IOException {
+        out.write(id);
+        out.write(x);
+        out.write(y);
+        for (int i = 0; i < maxEdges; i++) {
+            if (edges[i] != null)
+                edges[i].write(out);
+            else
+                Edge.writeNull(out);
+        }
+    }
+    public void addEdge(int to, int weight) {
+        edges[edgeCount++] = new Edge(to, weight);
+        assert edgeCount <= maxEdges;
     }
 }
 
 class Edge {
     int distance;
     int vertexIdx;
+    public Edge(int vertexIdx_, int distance_) {
+        vertexIdx = vertexIdx_;
+        distance = distance_;
+    }
+    public void write(DataOutputStream out) throws IOException  {
+        out.write(distance);
+        out.write(vertexIdx);
+    }
+    public static void writeNull(DataOutputStream out) throws IOException {
+        out.write(-1);
+        out.write(-1);
+    }
 }
 
 class MedianSplitter {
