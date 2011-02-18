@@ -12,13 +12,20 @@ public class MapReader {
         }
         
         MapReader mapReader = new MapReader();
-        mapReader.readMap(args[0]);
+        
+        try {
+            mapReader.readMap(args[0]);   
+        }
+        catch (IOException e) {
+            System.out.println ("Couldn't read file.");
+            return;
+        }
         
         try {
             writeFile();
         }
         catch (FileNotFoundException e) {
-            System.out.println ("File not found.");
+            System.out.println ("Couldn't write file.");
             return;
         }
 
@@ -37,15 +44,11 @@ public class MapReader {
         }
     }
     
-    void readMap(String filename) {
+    void readMap(String filename) throws IOException {
         tree = new MakeTree();
         
-        try {
-            parseVertexFile(filename + ".co");    
-            parseArcFile(filename + ".gr");    
-        }
-        catch (IOException e) {
-        }
+        parseVertexFile(filename + ".co");    
+        parseArcFile(filename + ".gr");    
         
         tree.buildTree();
     }
