@@ -1,4 +1,6 @@
 import java.io.*;
+import java.nio.*;
+import java.nio.channels.*;
 import java.util.Scanner;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -21,9 +23,9 @@ class Vertex {
         edges = new Edge[maxEdges]; //No vertex should have over 10 edges.
     }
     public void write(DataOutputStream out) throws IOException {
-        out.write(id);
-        out.write(x);
-        out.write(y);
+        out.writeInt(id);
+        out.writeInt(x);
+        out.writeInt(y);
         for (int i = 0; i < maxEdges; i++) {
             if (edges[i] != null)
                 edges[i].write(out);
@@ -45,12 +47,12 @@ class Edge {
         distance = distance_;
     }
     public void write(DataOutputStream out) throws IOException  {
-        out.write(distance);
-        out.write(vertexIdx);
+        out.writeInt(distance);
+        out.writeInt(vertexIdx);
     }
     public static void writeNull(DataOutputStream out) throws IOException {
-        out.write(-1);
-        out.write(-1);
+        out.writeInt(-1);
+        out.writeInt(-1);
     }
 }
 
@@ -113,30 +115,35 @@ class MedianSplitter {
 }
 
 public class MakeTree {
+    public static boolean fullyLoaded = false;
+
     Vertex[] vertices;
-    int[] map;
-    
-    public Vertex get(int n) {
-        return vertices[n];
-    }
+    IntBuffer map;
+    int size;
     
     public void createVertexArray(int size){
         vertices = new Vertex[size];
     }
     
-    // public Vertex[] getVertexArray() {
-    //     return vertices;
-    // }
+    public int getNumVertices(){
+        return size;
+    }
+    
+    public Vertex[] getVertexArray() {
+        return vertices;
+    }
     
     public Vertex getVertexByID(int id) {
         if (id < 0 || id > vertices.length-1)
             return null;
 
-        return vertices[map[id]];
+        return get(map.get(id));
     }
     
     public void buildTree() {
         treeify();
+
+        remapIdsToAddresses(vertices);
     }
 
     void treeify() {
@@ -149,13 +156,16 @@ public class MakeTree {
             int midpt = (right+left)/2;
             treeify(!useXaxis, left, midpt);
             treeify(!useXaxis, midpt, right);
-        } else {
-            //Build the vertex map as we treeify
-            map[this.get(right).id] = right;
-            
-            if (left != right)
-                map[this.get(left).id] = left;
         }
+    }
+    static void remapIdsToAddresses(Vertex[] vertices) {
+        int[] map = new int[vertices.length];
+        for (int i=0; i < vertices.length; i++)  {
+            map[vertices[i].id] = i;
+        }
+        for (int i=0; i < vertices.length; i++)
+            for (int j=0; j<vertices[i].edgeCount; j++)
+                vertices[i].edges[j].vertexIdx = map[vertices[i].edges[j].vertexIdx];
     }
     // static int[] generateVertexMap(Vertex[] vertices) {
     //     map = new int[vertices.length];
@@ -164,4 +174,39 @@ public class MakeTree {
     //     }
     //     return map;
     // }
+    public void loadTreeFromBinary(String filename) throws IOException {
+        fullyLoaded = false;
+        FileChannel channel = new RandomAccessFile(filename + ".bin", "r").getChannel();
+        map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()).asIntBuffer();
+    }
+    public void loadFullTreeFromBinary(String filename) throws IOException {
+        FileChannel channel = new RandomAccessFile(filename + ".bin", "r").getChannel();
+        map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()).asIntBuffer();
+        size = (int)channel.size()/23/4;
+        vertices = new Vertex[size];
+        for (int i=0; i<size; i++)
+            vertices[i] = this.get(i);
+        fullyLoaded = true;
+    }
+    public Vertex get(int n) {
+        if (fullyLoaded)
+            return vertices[n];
+
+        int startpos = n*23; // TODO: no magic constants!
+        int id = map.get(startpos);
+        int x = map.get(startpos+1);
+        int y = map.get(startpos+2);
+        
+        System.out.println (id + ": " + x + ", " + y);
+        
+        Vertex res = new Vertex(id, x, y);
+        for (int i=0; i<Vertex.maxEdges; i++) {
+            int distance = map.get(startpos+3+i*2);
+            int vertexIdx = map.get(startpos+3+i*2+1);
+            if (vertexIdx >= 0) {
+                res.edges[res.edgeCount++] = new Edge(vertexIdx, distance);
+            }
+        }
+        return res;
+    }
 }
