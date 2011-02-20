@@ -23,9 +23,9 @@ class Vertex {
         edges = new Edge[maxEdges]; //No vertex should have over 10 edges.
     }
     public void write(DataOutputStream out) throws IOException {
-        out.write(id);
-        out.write(x);
-        out.write(y);
+        out.writeInt(id);
+        out.writeInt(x);
+        out.writeInt(y);
         for (int i = 0; i < maxEdges; i++) {
             if (edges[i] != null)
                 edges[i].write(out);
@@ -47,12 +47,12 @@ class Edge {
         distance = distance_;
     }
     public void write(DataOutputStream out) throws IOException  {
-        out.write(distance);
-        out.write(vertexIdx);
+        out.writeInt(distance);
+        out.writeInt(vertexIdx);
     }
     public static void writeNull(DataOutputStream out) throws IOException {
-        out.write(-1);
-        out.write(-1);
+        out.writeInt(-1);
+        out.writeInt(-1);
     }
 }
 
@@ -150,10 +150,18 @@ public class MakeTree {
         return map;
     }
 
-    MappedByteBuffer map;
-    public void LoadTreeFromBinary(String[] args) throws IOException {
-        FileChannel channel = new RandomAccessFile(args[0] + ".bin", "r").getChannel();
-        map = channel.map(FileChannel.MapMode.READ_ONLY, 0, (int)channel.size());
+    IntBuffer map;
+    public void loadTreeFromBinary(String filename) throws IOException {
+        FileChannel channel = new RandomAccessFile(filename + ".bin", "r").getChannel();
+        map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()).asIntBuffer();
+    }
+    public void loadFullTreeFromBinary(String filename) throws IOException {
+        FileChannel channel = new RandomAccessFile(filename + ".bin", "r").getChannel();
+        map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()).asIntBuffer();
+        int size = (int)channel.size()/23/4;
+        vertices = new Vertex[size];
+        for (int i=0; i<size; i++)
+            vertices[i] = this.get(i);
     }
     public Vertex get(int n) {
         int startpos = n*23; // TODO: no magic constants!
@@ -161,9 +169,12 @@ public class MakeTree {
         int x  = map.get(startpos+1);
         int y = map.get(startpos+2);
         Vertex res = new Vertex(id, x, y);
-        for (int i=0; i<10; i++) {
-            res.edges[i].distance = map.get(startpos+3+i*2);
-            res.edges[i].vertexIdx = map.get(startpos+3+i*2+1);
+        for (int i=0; i<Vertex.maxEdges; i++) {
+            int distance = map.get(startpos+3+i*2);
+            int vertexIdx = map.get(startpos+3+i*2+1);
+            if (vertexIdx >= 0) {
+                res.edges[res.edgeCount++] = new Edge(vertexIdx, distance);
+            }
         }
         return res;
     }
