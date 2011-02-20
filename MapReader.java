@@ -28,16 +28,6 @@ public class MapReader {
             System.out.println ("Couldn't write file.");
             return;
         }
-
-        MapLoader mapLoader = new MapLoader();
-        
-        try {
-            mapLoader.loadMap(args[0]);   
-        }
-        catch (IOException e) {
-            System.out.println ("Couldn't load file.");
-            return;
-        }
         
 		MapSearcher mapSearcher = new MapSearcher(mapReader.getTree());
 		mapSearcher.startVisualizer();
