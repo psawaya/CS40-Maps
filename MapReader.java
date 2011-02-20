@@ -22,7 +22,7 @@ public class MapReader {
         }
         
         try {
-            writeFile();
+            writeFile(args[0]);
         }
         catch (FileNotFoundException e) {
             System.out.println ("Couldn't write file.");
@@ -38,8 +38,8 @@ public class MapReader {
         return tree;
     }
 
-    static void writeFile() throws IOException, FileNotFoundException {
-        DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("tmp")));
+    static void writeFile(String filename) throws IOException, FileNotFoundException {
+        DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(filename + ".bin")));
         for (int i=0; i < tree.vertices.length; i++) {
             tree.vertices[i].write(out);
         }

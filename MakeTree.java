@@ -1,4 +1,6 @@
 import java.io.*;
+import java.nio.*;
+import java.nio.channels.*;
 import java.util.Scanner;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -146,5 +148,23 @@ public class MakeTree {
             map[vertices[i].id] = i;
         }
         return map;
+    }
+
+    MappedByteBuffer map;
+    public void LoadTreeFromBinary(String[] args) throws IOException {
+        FileChannel channel = new RandomAccessFile(args[0] + ".bin", "r").getChannel();
+        map = channel.map(FileChannel.MapMode.READ_ONLY, 0, (int)channel.size());
+    }
+    public Vertex get(int n) {
+        int startpos = n*23; // TODO: no magic constants!
+        int id = map.get(startpos);
+        int x  = map.get(startpos+1);
+        int y = map.get(startpos+2);
+        Vertex res = new Vertex(id, x, y);
+        for (int i=0; i<10; i++) {
+            res.edges[i].distance = map.get(startpos+3+i*2);
+            res.edges[i].vertexIdx = map.get(startpos+3+i*2+1);
+        }
+        return res;
     }
 }
