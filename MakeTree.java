@@ -116,6 +116,7 @@ class MedianSplitter {
 
 public class MakeTree {
     public static boolean fullyLoaded = false;
+    public final static int minSize = 1;
 
     Vertex[] vertices;
     IntBuffer map;
@@ -144,6 +145,7 @@ public class MakeTree {
         treeify();
 
         remapIdsToAddresses(vertices);
+        fullyLoaded = true;
     }
 
     void treeify() {
@@ -167,15 +169,7 @@ public class MakeTree {
             for (int j=0; j<vertices[i].edgeCount; j++)
                 vertices[i].edges[j].vertexIdx = map[vertices[i].edges[j].vertexIdx];
     }
-    // static int[] generateVertexMap(Vertex[] vertices) {
-    //     map = new int[vertices.length];
-    //     for (int i=0; i < vertices.length; i++)  {
-    //         map[vertices[i].id] = i;
-    //     }
-    //     return map;
-    // }
     public void loadTreeFromBinary(String filename) throws IOException {
-        fullyLoaded = false;
         FileChannel channel = new RandomAccessFile(filename + ".bin", "r").getChannel();
         map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()).asIntBuffer();
     }

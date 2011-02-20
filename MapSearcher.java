@@ -14,15 +14,14 @@ public class MapSearcher extends MapExtractor{
 
 //		System.out.println("maxx"+maxx+ "   minx"+minx+ "   maxy"+maxy+ "  miny"+miny);
 		List<Vertex> vertexList = findInMap(minx,miny,maxx-minx,maxy-miny);
-		int[] vertexMap=map. generateVertexMap(map.vertices);
 		
 		LinkedList<GEdge> edgeList= new LinkedList<GEdge>();
 //		System.out.println(vertexList.size());
 		
 		for (Vertex v: vertexList ){
 			for (Edge e: v.edges){
-				if ((e==null)||(vertexMap[e.vertexIdx]==0)) continue;
-				Vertex w=map.vertices[vertexMap[e.vertexIdx]];
+				if (e==null) continue;
+				Vertex w=map.vertices[e.vertexIdx];
 				if  (v.id < w.id)
 					edgeList.add(new GEdge(v.y,v.x,w.y,w.x));
 			}			
