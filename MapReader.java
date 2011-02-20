@@ -7,7 +7,7 @@ public class MapReader {
     
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
-            System.out.println("USAGE: java MapReader <file>.co");
+           System.out.println("USAGE: java MapReader <file>.co");
             return;
         }
         
@@ -28,9 +28,10 @@ public class MapReader {
             System.out.println ("Couldn't write file.");
             return;
         }
-
-        MapSearcher mapSearcher = new MapSearcher(mapReader.getTree());
-        System.out.println ("Found " + mapSearcher.findInMap(-73576169,41079696,200000,200000).size() + " vertices.");
+        
+		MapSearcher mapSearcher = new MapSearcher(mapReader.getTree());
+		mapSearcher.startVisualizer();
+// System.out.println ("Found " + mapSearcher.findInMap(-73576169,41079696,50000,50000).size() + " vertices.");
     }
     
     MakeTree getTree() {
