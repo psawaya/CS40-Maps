@@ -113,38 +113,55 @@ class MedianSplitter {
 }
 
 public class MakeTree {
-    public final static int minSize = 1;
     Vertex[] vertices;
+    int[] map;
+    
+    public Vertex get(int n) {
+        return vertices[n];
+    }
     
     public void createVertexArray(int size){
         vertices = new Vertex[size];
     }
     
-    public Vertex[] getVertexArray() {
-        return vertices;
+    // public Vertex[] getVertexArray() {
+    //     return vertices;
+    // }
+    
+    public Vertex getVertexByID(int id) {
+        if (id < 0 || id > vertices.length-1)
+            return null;
+
+        return vertices[map[id]];
     }
     
     public void buildTree() {
-        treeify(vertices);
+        treeify();
     }
 
-    static void treeify(Vertex[] vertices) {
-        treeify(vertices, true, 0, vertices.length);
+    void treeify() {
+        treeify(true, 0, vertices.length);
     }
-    static void treeify(Vertex[] vertices, boolean useXaxis, int left, int right) {
+    void treeify(boolean useXaxis, int left, int right) {
         MedianSplitter splitter = new MedianSplitter();
-        if (right - left > minSize) {
+        if (right - left > 1) {
             splitter.split(vertices, left, right, useXaxis);
             int midpt = (right+left)/2;
-            treeify(vertices, !useXaxis, left, midpt);
-            treeify(vertices, !useXaxis, midpt, right);
+            treeify(!useXaxis, left, midpt);
+            treeify(!useXaxis, midpt, right);
+        } else {
+            //Build the vertex map as we treeify
+            map[this.get(right).id] = right;
+            
+            if (left != right)
+                map[this.get(left).id] = left;
         }
     }
-    static int[] generateVertexMap(Vertex[] vertices) {
-        int[] map = new int[vertices.length];
-        for (int i=0; i < vertices.length; i++)  {
-            map[vertices[i].id] = i;
-        }
-        return map;
-    }
+    // static int[] generateVertexMap(Vertex[] vertices) {
+    //     map = new int[vertices.length];
+    //     for (int i=0; i < vertices.length; i++)  {
+    //         map[vertices[i].id] = i;
+    //     }
+    //     return map;
+    // }
 }
