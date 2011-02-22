@@ -11,14 +11,7 @@ public class TreeBuilder {
     public TreeBuilder(String filename) throws IOException {
         parseVertexFile(filename + ".co");    
         parseArcFile(filename + ".gr");    
-        buildTree();
-    }
-    
-    public Vertex[] getVertexArray() {
-        return vertices;
-    }
-    
-    public void buildTree() {
+
         treeify();
         remapIdsToAddresses(vertices);
     }
@@ -45,10 +38,6 @@ public class TreeBuilder {
         for (int i=0; i < vertices.length; i++)
             for (int j=0; j<vertices[i].edgeCount; j++)
                 vertices[i].edges[j].vertexIdx = map[vertices[i].edges[j].vertexIdx];
-    }
-
-    public Vertex get(int n) {
-        return vertices[n];
     }
 
     void parseVertexFile(String filename) throws IOException {
