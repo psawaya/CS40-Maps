@@ -11,12 +11,9 @@ public class MapSearcher extends MapExtractor{
     }
 
 	public LinkedList<GEdge> getEdges(int maxy, int miny, int maxx, int minx){
-
-//		System.out.println("maxx"+maxx+ "   minx"+minx+ "   maxy"+maxy+ "  miny"+miny);
 		List<Vertex> vertexList = findInMap(minx,miny,maxx-minx,maxy-miny);
 		
 		LinkedList<GEdge> edgeList= new LinkedList<GEdge>();
-//		System.out.println(vertexList.size());
 		
 		for (Vertex v: vertexList ){
 			for (Edge e: v.edges){
@@ -37,8 +34,6 @@ public class MapSearcher extends MapExtractor{
     }
     
     List<Vertex> findInRect(MapRect rect, List<Vertex> vertexList) {
-        // Vertex[] vertices = map.getVertexArray();
-        
         addMatchingVertices(rect, 0, map.getNumVertices(), true, vertexList);
 
         return vertexList;

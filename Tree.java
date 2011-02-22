@@ -16,13 +16,6 @@ public class Tree {
         return size;
     }
     
-    public Vertex getVertexByID(int id) {
-        if (id < 0 || id > size-1)
-            return null;
-
-        return get(map.get(id));
-    }
-
     public Vertex get(int n) {
         int startpos = n*23; // TODO: no magic constants!
         int id = map.get(startpos);
