@@ -172,6 +172,7 @@ public class MakeTree {
     public void loadTreeFromBinary(String filename) throws IOException {
         FileChannel channel = new RandomAccessFile(filename + ".bin", "r").getChannel();
         map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()).asIntBuffer();
+        size = (int)channel.size()/23/4;
     }
     public void loadFullTreeFromBinary(String filename) throws IOException {
         FileChannel channel = new RandomAccessFile(filename + ".bin", "r").getChannel();
@@ -190,9 +191,7 @@ public class MakeTree {
         int id = map.get(startpos);
         int x = map.get(startpos+1);
         int y = map.get(startpos+2);
-        
-        System.out.println (id + ": " + x + ", " + y);
-        
+                
         Vertex res = new Vertex(id, x, y);
         for (int i=0; i<Vertex.maxEdges; i++) {
             int distance = map.get(startpos+3+i*2);

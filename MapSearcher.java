@@ -21,16 +21,14 @@ public class MapSearcher extends MapExtractor{
 		for (Vertex v: vertexList ){
 			for (Edge e: v.edges){
 				if (e==null) continue;
-				Vertex w=map.vertices[e.vertexIdx];
-				if  (v.id < w.id)
+				Vertex w=map.get(e.vertexIdx);
+				if (v.id < w.id)
 					edgeList.add(new GEdge(v.y,v.x,w.y,w.x));
 			}			
 		}
 		return edgeList;
 	}
 
-    
-	
 	List<Vertex> findInMap(int x, int y, int width, int height) {
         ArrayList<Vertex> vertexList = new ArrayList<Vertex>();
         
@@ -39,27 +37,28 @@ public class MapSearcher extends MapExtractor{
     }
     
     List<Vertex> findInRect(MapRect rect, List<Vertex> vertexList) {
-        Vertex[] vertices = map.getVertexArray();
+        // Vertex[] vertices = map.getVertexArray();
         
-        addMatchingVertices(rect, vertices, 0, vertices.length, true, vertexList);
+        addMatchingVertices(rect, 0, map.getNumVertices(), true, vertexList);
 
         return vertexList;
     }
 
-    void addMatchingVertices(MapRect rect, Vertex[] vertices, int start, int end, boolean xAxis, List<Vertex> vertexList) {
+    void addMatchingVertices(MapRect rect, int start, int end, boolean xAxis, List<Vertex> vertexList) {
         int medianIdx = (start+end)/2;
+        Vertex medianVertex = map.get(medianIdx);
         
         if (end - start <= 1) {
-            vertexList.add(vertices[medianIdx]);
+            vertexList.add(medianVertex);
             return;
         }
         
         VertexComparator comparator = new VertexComparator(xAxis);
         
-        if (comparator.compare(vertices[medianIdx], rect) <= 0)
-            addMatchingVertices(rect, vertices, medianIdx, end, !xAxis, vertexList);
+        if (comparator.compare(medianVertex, rect) <= 0)
+            addMatchingVertices(rect, medianIdx, end, !xAxis, vertexList);
         
-        if (comparator.compare(vertices[medianIdx], rect) >= 0)
-            addMatchingVertices(rect, vertices, start, medianIdx, !xAxis, vertexList);
+        if (comparator.compare(medianVertex, rect) >= 0)
+            addMatchingVertices(rect, start, medianIdx, !xAxis, vertexList);
     }
 }

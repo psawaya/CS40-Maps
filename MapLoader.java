@@ -30,6 +30,6 @@ public class MapLoader {
     
     void loadMap(String filename) throws IOException {
         tree = new MakeTree();
-        tree.loadFullTreeFromBinary(filename);
+        tree.loadTreeFromBinary(filename);
     }
 }
