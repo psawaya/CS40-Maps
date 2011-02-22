@@ -28,10 +28,8 @@ public class MapReader {
             System.out.println ("Couldn't write file.");
             return;
         }
-        
-		MapSearcher mapSearcher = new MapSearcher(mapReader.getTree());
-		mapSearcher.startVisualizer();
-// System.out.println ("Found " + mapSearcher.findInMap(-73576169,41079696,50000,50000).size() + " vertices.");
+
+        System.out.println ("File successfully processed. You may run MapLoader now.");
     }
     
     MakeTree getTree() {

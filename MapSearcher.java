@@ -4,9 +4,9 @@ import java.util.LinkedList;
 import visualizer.*;
 
 public class MapSearcher extends MapExtractor{
-    MakeTree map;
+    Tree map;
     
-    public MapSearcher (MakeTree map_) {
+    public MapSearcher (Tree map_) {
         map = map_;
     }
 
