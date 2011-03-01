@@ -1,0 +1,82 @@
+<html>
+<head>
+	<script>
+	var mapcanvas;
+	var ctx;
+	
+	var centerLat = 42380280;
+	var centerLon = -72523610;
+	
+	var canvasCenter = 1000000000;
+	
+	var xfactor = .0002;
+	var latlonratio = 1.5;
+	var yfactor = xfactor*latlonratio;
+	
+
+	
+	function init () {
+		mapcanvas = document.getElementById('mapcanvas');
+		ctx = mapcanvas.getContext('2d');
+
+		if (ctx) {
+			main();
+		}		
+	}
+
+	function main() {
+		ctx.fillStyle = "rgb(255,255,255)";
+		ctx.fillRect(0,0,500,500);
+		
+		// requestEdges(centerLon,centerLat,100000,100000);
+		requestEdges(40950947, 40065614, -72523610, -74123610);
+		// requestEdges(40694947, 40473614, -73323610, -73723610);
+		
+	}
+	
+	function drawEdges(edgesArray) {
+		// console.log(edgesArray);
+		
+		ctx.strokeStyle = "rgb(0,0,0)";
+		
+		for (var edgeIdx = 0; edgeIdx < edgesArray.length; edgeIdx++) {
+			ctx.moveTo(getX(edgesArray[edgeIdx][0]),getY(edgesArray[edgeIdx][1]));
+			ctx.lineTo(getX(edgesArray[edgeIdx][2]),getY(edgesArray[edgeIdx][3]));
+			
+			// console.log([getX(edgesArray[edgeIdx][0]),getY(edgesArray[edgeIdx][1])]);
+		}
+		
+		ctx.stroke();
+	}
+	
+	function requestEdges(maxy,miny,maxx,minx) {
+		var xhr = new XMLHttpRequest();
+		
+		xhr.open('GET',"http://localhost:8080?maxy=" + maxy + "&miny=" + miny + "&maxx=" + maxx + "&minx=" + minx);
+		
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState == 4 && xhr.status == 200) {
+			    console.log('Got edges.');
+				drawEdges(eval(xhr.responseText));
+			}
+		};
+		
+		xhr.send(null);
+	}
+	
+	function getX (lon) {
+		return -parseInt((lon-centerLon)*xfactor); //+ canvasCenter;
+    }
+
+    function getY (lat) {
+		return parseInt((centerLat-lat)*yfactor)-300;// + canvasCenter;
+    }
+	
+	</script>
+</head>
+
+<body onload="init();">
+	<canvas id="mapcanvas" width="500px" height="500px"></canvas>
+</body>
+
+</html>
