@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.HashSet;
 
+
 class VComponent extends JComponent {
 
     private VViewport viewport;
@@ -37,6 +38,20 @@ class VComponent extends JComponent {
 	Block (Rectangle r) {
 	    rect = r;
 	}
+    }
+    
+    class EdgeFetcher implements Runnable {
+        VComponent window;
+        LinkedList<Block> blocksToFetch;
+
+        EdgeFetcher (VComponent window_, LinkedList<Block> blocksToFetch_) {
+            window = window_;
+            blocksToFetch = blocksToFetch_;
+        }
+
+        public void run() {
+
+        }
     }
 
     VComponent (VViewport v, MapExtractor m) throws IOException {
@@ -138,7 +153,7 @@ class VComponent extends JComponent {
 	x1 *= blockWidth;
 	x2 = x2*blockWidth - x1;
 
-     	y1 *= blockHeight;
+ 	y1 *= blockHeight;
 	y2 = y2*blockHeight - y1;
 	
 	Rectangle r = new Rectangle(x1, y1, x2, y2);
@@ -160,35 +175,37 @@ class VComponent extends JComponent {
 	    }
 	}
 
-	synchronized (blocks) {
-	    for (int x = r.x; x < r.x + r.width; x += blockWidth) {
-		yloop: for (int y = r.y; y < r.y + r.height; y += blockHeight) {
-		    Rectangle q = new Rectangle(x, y, blockWidth, blockHeight);
-		    for (Block b : blocks)
-			if (b.rect.equals(q)) continue yloop;
-		    
-		    int maxLon = getLon(x+blockWidth);
-		    int minLon = getLon(x);
-		    int maxLat = getLat(y);
-		    int minLat = getLat(y+blockHeight);
 
-		    //		    System.out.println (maxLon + " " + minLon + " " + maxLat + " " + minLat);
-		    Block b = new Block(q);
-		    LinkedList<GEdge> l1 = level.getEdges(maxLat, minLat, maxLon, minLon);
-		    LinkedList<VEdge> l2 = new LinkedList<VEdge>();
-		    //		    for (GEdge e : l1)
-		    //			System.out.println(e);
-		    for (GEdge e : l1) 
-			l2.add(new VEdge(getX(e.vlon), getY(e.vlat),
-					 getX(e.wlon), getY(e.wlat)));
-		    //		    for (VEdge e : l2)
-		    //			System.out.println(e);
-		    b.edges = l2;
-		    b.ready = true;
-		    blocks.add(b);
-		}
-	    }
-	}
+
+    synchronized (blocks) {
+        for (int x = r.x; x < r.x + r.width; x += blockWidth) {
+             yloop: for (int y = r.y; y < r.y + r.height; y += blockHeight) {
+                         Rectangle q = new Rectangle(x, y, blockWidth, blockHeight);
+                         for (Block b : blocks)
+                             if (b.rect.equals(q)) continue yloop;
+         
+                             int maxLon = getLon(x+blockWidth);
+                             int minLon = getLon(x);
+                             int maxLat = getLat(y);
+                             int minLat = getLat(y+blockHeight);
+    
+                             Block b = new Block(q);
+                             LinkedList<GEdge> l1 = level.getEdges(maxLat, minLat, maxLon, minLon);
+                             LinkedList<VEdge> l2 = new LinkedList<VEdge>();
+    
+                             for (GEdge e : l1) 
+                                 l2.add(new VEdge(getX(e.vlon), getY(e.vlat),
+                                         getX(e.wlon), getY(e.wlat)));
+    
+                             b.edges = l2;
+                             b.ready = true;
+                             blocks.add(b);
+             }
+        }
+    }
+    
+    new Thread (new EdgeFetcher (this,blocks)).start();
+	
     }
 
     int getX (int lon) {
@@ -212,6 +229,7 @@ class VComponent extends JComponent {
     void handleClick(String mode, int x, int y) {}
 
     void doZoom (int delta) {
+    System.out.println("doZoom called.");
 	Rectangle visibleRect = viewport.getViewRect();
 	int centerX = visibleRect.x + visibleRect.width/2;
 	int centerY = visibleRect.y + visibleRect.height/2;
